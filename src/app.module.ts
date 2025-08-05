@@ -21,14 +21,14 @@ import { UtilizacaoSolo } from './consulta-previa/entities/utilizacao-solo.entit
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql', // ou 'postgres'
+      type: 'mysql', 
       host: 'localhost',
-      port: 3306, // postgres: 5432
+      port: 3306, 
       username: 'root',
       password: '1234567',
       database: 'consulta_previa_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // cuidado: true só no desenvolvimento!
+      synchronize: true,
     }),
     TypeOrmModule.forFeature([
       ConsultaPrevia,
