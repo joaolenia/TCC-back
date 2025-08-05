@@ -16,6 +16,9 @@ export class ConsultaPrevia {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  id_sigFacil:number;
+
   @Column({ length: 13 })
   co_protocolo_redesim: string;
 
