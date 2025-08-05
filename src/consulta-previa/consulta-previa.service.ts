@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm'; 
+import { DataSource, Repository } from 'typeorm';
 import { CreateConsultaPreviaDto } from './dto/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
 import { Solicitante } from './entities/solicitante.entity';
@@ -18,7 +18,6 @@ import { ClassificacaoRisco } from './entities/classificacao-risco.entity';
 @Injectable()
 export class ConsultaPreviaService {
   constructor(
-    // Injete o DataSource para gerenciar a transação
     private dataSource: DataSource,
     @InjectRepository(ConsultaPrevia)
     private readonly consultaPreviaRepository: Repository<ConsultaPrevia>,
@@ -27,32 +26,31 @@ export class ConsultaPreviaService {
   async create(
     createConsultaPreviaDto: CreateConsultaPreviaDto,
   ): Promise<ConsultaPrevia> {
-    const { dados_consulta_previa } = createConsultaPreviaDto;
+    // Extrai o 'id' e o resto dos dados do DTO
+    const { id: idSigFacil, ...dados } = createConsultaPreviaDto.dados_consulta_previa;
 
-    // Inicia a transação
     return this.dataSource.transaction(async (transactionalEntityManager) => {
-      // O método .create() do repositório apenas cria a instância do objeto,
-      // ele não acessa o banco de dados. Isso é seguro de se fazer aqui.
+      // Cria a entidade com todos os dados, exceto o 'id' do DTO
       const novaConsulta = this.consultaPreviaRepository.create({
-        ...dados_consulta_previa,
-        id_sigFacil:dados_consulta_previa.id,
-        solicitante: dados_consulta_previa.solicitante as Solicitante,
-        endereco: dados_consulta_previa.endereco as Endereco,
-        utilizacao_solo: dados_consulta_previa.utilizacao_solo as UtilizacaoSolo,
-        classificacao_risco: dados_consulta_previa.classificacao_risco as ClassificacaoRisco,
-        
-        opcoes_nome: dados_consulta_previa.opcoes_nome as OpcaoNome[],
-        atividades: dados_consulta_previa.atividades as Atividade[],
-        eventos: dados_consulta_previa.eventos as EventoRedesim[],
-        socios: dados_consulta_previa.socios as Socio[],
-        tipo_unidade: dados_consulta_previa.tipo_unidade as TipoUnidade[],
-        formas_atuacao: dados_consulta_previa.formas_atuacao as FormaAtuacao[],
-        questionario: dados_consulta_previa.questionario as Pergunta[],
+        ...dados,
+        // Atribui explicitamente o id do DTO para o campo id_sigFacil
+        id_sigFacil: idSigFacil,
+
+        // Mapeia os DTOs aninhados para as entidades correspondentes
+        solicitante: dados.solicitante as Solicitante,
+        endereco: dados.endereco as Endereco,
+        utilizacao_solo: dados.utilizacao_solo as UtilizacaoSolo,
+        classificacao_risco: dados.classificacao_risco as ClassificacaoRisco,
+        opcoes_nome: dados.opcoes_nome as OpcaoNome[],
+        atividades: dados.atividades as Atividade[],
+        eventos: dados.eventos as EventoRedesim[],
+        socios: dados.socios as Socio[],
+        tipo_unidade: dados.tipo_unidade as TipoUnidade[],
+        formas_atuacao: dados.formas_atuacao as FormaAtuacao[],
+        questionario: dados.questionario as Pergunta[],
       });
 
-      // Salva a entidade principal e todas as suas cascatas DENTRO da transação,
-      // usando o entityManager da transação.
-      // Se qualquer erro ocorrer aqui, o TypeORM fará o rollback automaticamente.
+      // Salva a nova entidade dentro da transação
       return transactionalEntityManager.save(novaConsulta);
     });
   }

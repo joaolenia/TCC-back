@@ -3,7 +3,7 @@ import { ConsultaPreviaService } from './consulta-previa.service';
 import { CreateConsultaPreviaDto } from './dto/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
 
-@Controller('consulta-previa')
+@Controller('v1/integracao/consultas-previas')
 export class ConsultaPreviaController {
   constructor(private readonly consultaPreviaService: ConsultaPreviaService) {}
 
