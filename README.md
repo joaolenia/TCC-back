@@ -1,98 +1,128 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## Body Para post da CPV ###
+### URL : http://localhost:3000/v1/integracao/consultas-previas ###
+```JSON
+{
+  "controle": {
+    "nu_identificador_orgao": 99,
+    "ds_orgao": "Junta Comercial do Estado Exemplo"
+  },
+  "dados_consulta_previa": {
+		"id":123,
+    "co_protocolo_redesim": "SP20240001234",
+    "dt_solicitacao": "2025-08-05 14:30:00",
+    "nu_cnpj": "12345678000199",
+    "nu_cnpj_matriz": "12345678000199",
+    "is_atualizacao_receita": false,
+    "solicitante": {
+      "nu_cpf": "11122233344",
+      "ds_nome": "João da Silva",
+      "is_contador": true,
+      "nu_ddd_telefone": "11",
+      "nu_telefone": "987654321",
+      "nu_ramal": "123",
+      "ds_email": "joao.silva@contador.com"
+    },
+    "opcoes_nome": [
+      { "ds_opcao_nome": "Tecnologia Inovadora Alfa LTDA" },
+      { "ds_opcao_nome": "Soluções Digitais Alfa ME" },
+      { "ds_opcao_nome": "Consultoria Alfa Eireli" }
+    ],
+    "ds_objeto_social": "Desenvolvimento e licenciamento de programas de computador customizáveis; consultoria em tecnologia da informação; e suporte técnico, manutenção e outros serviços em tecnologia da informação.",
+    "atividades": [
+      {
+        "co_cnae": "6201501",
+        "is_atividade_principal": true,
+        "is_exerce_no_endereco": true,
+        "atividades_especializadas": [
+          {
+            "co_cnae_especializada": "6201-5/01-01",
+            "is_atividade_principal": true,
+            "is_exerce_no_endereco": true
+          }
+        ]
+      },
+      {
+        "co_cnae": "6204000",
+        "is_atividade_principal": false,
+        "is_exerce_no_endereco": true
+      }
+    ],
+    "eventos": [
+      { "co_evento": 101 },
+      { "co_evento": 244 }
+    ],
+    "co_natureza_juridica": "2062",
+    "co_enquadramento": 1,
+    "socios": [
+      {
+        "ds_nome": "Maria Oliveira",
+        "nu_cpf_cnpj": "44455566677",
+        "ds_nome_mae": "Ana Oliveira"
+      },
+      {
+        "ds_nome": "Pedro Santos",
+        "nu_cpf_cnpj": "77788899900",
+        "ds_nome_mae": "Beatriz Santos"
+      }
+    ],
+    "endereco": {
+      "co_uf": 35,
+      "co_cep": "01001000",
+      "co_tipo_imovel": 1,
+      "co_tipo_logradouro": 171,
+      "ds_tipo_logradouro": "Avenida",
+      "ds_endereco": "Paulista",
+      "nu_numero": "1578",
+      "ds_bairro": "Bela Vista",
+      "ds_complemento": "Andar 10; Conjunto 101",
+      "co_municipio": 3550308,
+      "co_municipio_tom": 1004,
+      "nu_area_total": "500.00",
+      "nu_area_utilizada": "250.00",
+      "ds_ponto_referencia": "Próximo ao metrô Consolação",
+      "natureza_imovel": {
+        "co_tipo_natureza": "1",
+        "nu_inscricao": "001.002.0003-4"
+      },
+      "coordenadas_geograficas": {
+        "nu_latitude": "-23.56138",
+        "nu_longitude": "-46.65639"
+      }
+    },
+    "tipo_unidade": [
+      { "co_tipo_unidade": 1 }
+    ],
+    "formas_atuacao": [
+      { "co_forma_atuacao": 1 },
+      { "co_forma_atuacao": 2 }
+    ],
+    "utilizacao_solo": {
+      "co_utilizacao_solo": 2,
+      "nu_autorizacao": "AUT-2024-98765",
+      "ds_arquivo": [
+        { "ds_url_servico": "https://<url-do-orgao>/v1/arquivos/doc1.pdf" }
+      ]
+    },
+    "questionario": [
+      {
+        "co_pergunta": 101,
+        "ds_pergunta": "O estabelecimento possui publicidade externa?",
+        "ds_resposta": "Sim"
+      }
+    ],
+    "nu_cnpj_entidade_registro": "99888777000166",
+		 "nu_cnpj_entidade_registro_matriz": "12312312312323",
+    "classificacao_risco": {
+      "ds_tipo_risco": "Baixo Risco A",
+      "pergunta_classificacao_risco": [
+        {
+          "co_identificador_pergunta": "RISCO01",
+          "ds_pergunta": "A atividade envolve produtos inflamáveis?",
+          "ds_resposta": "Não"
+        }
+      ]
+    },
+    "co_inscricao_municipal": "987654321-0"
+  }
+}
 ```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
