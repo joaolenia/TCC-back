@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConsultaPreviaModule } from './consulta-previa/consulta-previa.module';
+import { CnaesModule } from './cnaes/cnaes.module';
+import { ZoneamentoModule } from './zoneamento/zoneamento.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { ConsultaPreviaModule } from './consulta-previa/consulta-previa.module';
     }),
     // Adicione o ConsultaPreviaModule aqui
     ConsultaPreviaModule,
+    CnaesModule,
+    ZoneamentoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

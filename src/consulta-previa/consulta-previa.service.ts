@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { CreateConsultaPreviaDto } from './dto/create-consulta-previa.dto';
+import { CreateConsultaPreviaDto } from './dtos/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
 import { Solicitante } from './entities/solicitante.entity';
 import { Endereco } from './entities/endereco.entity';

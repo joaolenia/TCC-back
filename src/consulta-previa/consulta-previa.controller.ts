@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ConsultaPreviaService } from './consulta-previa.service';
-import { CreateConsultaPreviaDto } from './dto/create-consulta-previa.dto';
+import { CreateConsultaPreviaDto } from './dtos/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
 
 @Controller('v1/integracao/consultas-previas')
