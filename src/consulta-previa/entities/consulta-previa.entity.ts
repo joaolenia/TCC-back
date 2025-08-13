@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Solicitante } from "./solicitante.entity";
 import { OpcaoNome } from "./opcao-nome.entity";
 import { Atividade } from "./atividade.entity";
@@ -10,6 +10,12 @@ import { FormaAtuacao } from "./forma-atuacao.entity";
 import { UtilizacaoSolo } from "./utilizacao-solo.entity";
 import { Pergunta } from "./pergunta.entity";
 import { ClassificacaoRisco } from "./classificacao-risco.entity";
+import { Zoneamento } from "src/zoneamento/entities/Zonas.entity";
+
+export enum SituacaoConsulta {
+    DEFERIDO = "DEFERIDO",
+    INDEFERIDO = "INDEFERIDO",
+}
 
 @Entity()
 export class ConsultaPrevia {
@@ -88,4 +94,14 @@ export class ConsultaPrevia {
     @OneToOne(() => ClassificacaoRisco, { cascade: true, eager: true })
     @JoinColumn()
     classificacao_risco: ClassificacaoRisco;
+
+    @ManyToOne(() => Zoneamento, { eager: true })
+    @JoinColumn()
+    zoneamento: Zoneamento;
+
+    @Column({ type: 'enum', enum: SituacaoConsulta, nullable: true })
+    situacao?: SituacaoConsulta;
+
+    @Column({ type: 'text', nullable: true })
+    observacoes?: string;
 }

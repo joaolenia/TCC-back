@@ -101,10 +101,10 @@ private validateGeoJSON(area: any): object {
   };
 }
 
-
   async findZoneByCoordinate(lon: number, lat: number): Promise<Zoneamento | null> {
   return await this.zoneamentoRepository
     .createQueryBuilder('z')
+     .leftJoinAndSelect('z.cnaesPermitidos', 'c')
     .where(
       'ST_Contains(z.area, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))',
       { lon, lat }

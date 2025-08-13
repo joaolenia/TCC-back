@@ -8,5 +8,6 @@ import { Cnaes } from 'src/cnaes/entities/Cnae.entity';
   imports: [TypeOrmModule.forFeature([Zoneamento, Cnaes])],
   controllers: [ZoneamentoController],
   providers: [ZoneamentoService],
+  exports: [ZoneamentoService],
 })
 export class ZoneamentoModule {}

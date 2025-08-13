@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
 import { Cnaes } from 'src/cnaes/entities/Cnae.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('zoneamentos')
 export class Zoneamento {
@@ -17,6 +18,7 @@ export class Zoneamento {
   cnaesPermitidos: Cnaes[];
 
   // Campo GeoJSON
+  @Exclude() // <-- Isso impede que apareça no JSON
   @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326, nullable: true })
-  area?: object; // Aceita o GeoJSON diretamente
+  area?: object;
 }

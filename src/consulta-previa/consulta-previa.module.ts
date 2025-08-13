@@ -19,6 +19,7 @@ import { Socio } from './entities/socio.entity';
 import { Solicitante } from './entities/solicitante.entity';
 import { TipoUnidade } from './entities/tipo-unidade.entity';
 import { UtilizacaoSolo } from './entities/utilizacao-solo.entity';
+import { ZoneamentoModule } from 'src/zoneamento/zoneamento.module'; // importa o módulo
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { UtilizacaoSolo } from './entities/utilizacao-solo.entity';
       TipoUnidade,
       UtilizacaoSolo,
     ]),
+    ZoneamentoModule, 
   ],
   controllers: [ConsultaPreviaController],
   providers: [ConsultaPreviaService],
