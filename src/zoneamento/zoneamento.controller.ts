@@ -6,12 +6,14 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   ParseIntPipe,
+  BadRequestException,
+  ParseFloatPipe,
 } from '@nestjs/common';
 import { ZoneamentoService } from './zoneamento.service';
 import { CreateZoneamentoDto } from './dtos/create-zoneamento.dto';
 import { UpdateZoneamentoDto } from './dtos/update-zoneamento.dto';
-import { AtualizarCoordenadasDto } from './dtos/cordenadas.dto';
 
 @Controller('v1/integracao/zoneamentos')
 export class ZoneamentoController {
@@ -20,6 +22,17 @@ export class ZoneamentoController {
   @Post()
   async create(@Body() createZoneamentoDto: CreateZoneamentoDto) {
     return await this.zoneamentoService.create(createZoneamentoDto);
+  }
+    @Get('coord') // Coloque antes de ':id'
+  async findZoneByCoordinate(
+    @Query('lon', ParseFloatPipe) lon: number,
+    @Query('lat', ParseFloatPipe) lat: number,
+  ) {
+    const zoneamento = await this.zoneamentoService.findZoneByCoordinate(lon, lat);
+    if (!zoneamento) {
+      return { message: 'Nenhuma zona encontrada para essas coordenadas' };
+    }
+    return zoneamento;
   }
 
   @Get()
@@ -43,15 +56,6 @@ export class ZoneamentoController {
   @Delete(':id')
   async deleteById(@Param('id', ParseIntPipe) id: number) {
     return await this.zoneamentoService.deleteById(id);
-  }
-
-    @Patch(':id/polygon')
-  async addPolygon(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { geojson: any }, // recebe o GeoJSON completo
-  ) {
-    const { geojson } = body;
-    return await this.zoneamentoService.addPolygonById(id, geojson);
   }
 
 

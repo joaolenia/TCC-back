@@ -1,25 +1,28 @@
-import {
-  IsString,
-  Length,
-  IsNotEmpty,
-  IsArray,
-  ArrayNotEmpty,
-  ArrayUnique,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsOptional, IsObject } from 'class-validator';
 
 export class CreateZoneamentoDto {
   @IsString()
-  @Length(1, 100)
+  @IsNotEmpty()
   nome: string;
 
   @IsString()
-  @IsNotEmpty()
-  descricao: string;
+  @IsOptional()
+  descricao?: string;
 
   @IsArray()
-  @ArrayNotEmpty({ message: 'A lista de CNAEs permitidos não pode estar vazia' })
-  @ArrayUnique({ message: 'IDs duplicados de CNAE não são permitidos' })
-  @IsInt({ each: true, message: 'Cada CNAE deve ser um número inteiro (ID)' })
+  @IsNotEmpty()
   cnaesPermitidosIds: number[];
+
+  @IsOptional()
+  @IsObject()
+  area?: {
+    type: 'FeatureCollection';
+    features: {
+      type: 'Feature';
+      geometry: {
+        type: 'Polygon';
+        coordinates: number[][][];
+      };
+    }[];
+  };
 }
