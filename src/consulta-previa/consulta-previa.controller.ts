@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get } from '@nestjs/common';
 import { ConsultaPreviaService } from './consulta-previa.service';
 import { CreateConsultaPreviaDto } from './dtos/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
@@ -12,5 +12,10 @@ export class ConsultaPreviaController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createConsultaPreviaDto: CreateConsultaPreviaDto): Promise<ConsultaPreviaResponseDto> {
     return this.consultaPreviaService.create(createConsultaPreviaDto);
+  }
+
+    @Get('resumo')
+  async getResumo() {
+    return this.consultaPreviaService.findAllResumo();
   }
 }

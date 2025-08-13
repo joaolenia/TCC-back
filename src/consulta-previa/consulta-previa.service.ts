@@ -58,6 +58,30 @@ export class ConsultaPreviaService {
     return this.mapToResponse(saved);
   }
 
+   async findAllResumo(): Promise<any[]> {
+    const consultas = await this.consultaPreviaRepository.find({
+      relations: ['solicitante', 'endereco', 'atividades'],
+    });
+
+    return consultas.map((c) => {
+      const enderecoResumido = c.endereco
+        ? `${c.endereco.ds_bairro}, ${c.endereco.ds_endereco}, ${c.endereco.nu_numero}`
+        : '';
+
+      const cnaes = c.atividades?.map((a) => a.co_cnae) || [];
+
+      return {
+        id: c.id,
+        situacao:c.situacao,
+        co_protocolo_redesim: c.co_protocolo_redesim,
+        nome_solicitante: c.solicitante?.ds_nome || '',
+        endereco: enderecoResumido,
+        dt_solicitacao: c.dt_solicitacao,
+        cnaes,
+      };
+    });
+  }
+
   private async assignZoneamento(consulta: ConsultaPrevia) {
     const lat = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_latitude);
     const lon = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_longitude);
@@ -145,5 +169,5 @@ export class ConsultaPreviaService {
 
     return response;
   }
-  
+
 }
