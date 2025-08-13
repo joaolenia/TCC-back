@@ -16,24 +16,8 @@ export class Zoneamento extends BaseEntity {
   @Column({ type: 'varchar', length: 100, unique: true })
   nome: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   descricao: string;
-
-@Column({
-  type: 'geometry',
-  spatialFeatureType: 'Polygon',
-  srid: 4326,
-  transformer: {
-    to: (value: any) => value,
-    from: (value: Buffer) => {
-      // converte para GeoJSON ao buscar
-      return value ? JSON.parse(value.toString()) : null;
-    },
-  },
-})
-area: string;
-
-
 
   @ManyToMany(() => Cnaes, { eager: true })
   @JoinTable({
@@ -42,4 +26,14 @@ area: string;
     inverseJoinColumn: { name: 'cnae_id', referencedColumnName: 'id' },
   })
   cnaesPermitidos: Cnaes[];
+
+  // Coluna para o polígono da zona
+@Column({
+  type: 'geometry',
+  spatialFeatureType: 'Polygon',
+  srid: 4326,
+  nullable: true, // permite que seja nula
+})
+area: any;
+
 }

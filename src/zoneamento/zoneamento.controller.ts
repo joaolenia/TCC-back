@@ -45,11 +45,14 @@ export class ZoneamentoController {
     return await this.zoneamentoService.deleteById(id);
   }
 
-  @Patch(':id/coordenadas')
-  async atualizarCoordenadas(
+    @Patch(':id/polygon')
+  async addPolygon(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: AtualizarCoordenadasDto,
+    @Body() body: { geojson: any }, // recebe o GeoJSON completo
   ) {
-    return await this.zoneamentoService.atualizarCoordenadas(id, body.geometry);
+    const { geojson } = body;
+    return await this.zoneamentoService.addPolygonById(id, geojson);
   }
+
+
 }

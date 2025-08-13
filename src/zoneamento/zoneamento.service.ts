@@ -9,6 +9,7 @@ import { Zoneamento } from './entities/Zonas.entity';
 import { CreateZoneamentoDto } from './dtos/create-zoneamento.dto';
 import { UpdateZoneamentoDto } from './dtos/update-zoneamento.dto';
 import { Cnaes } from 'src/cnaes/entities/Cnae.entity';
+import { parse } from 'terraformer-wkt-parser';
 @Injectable()
 export class ZoneamentoService {
   constructor(
@@ -17,39 +18,38 @@ export class ZoneamentoService {
 
     @InjectRepository(Cnaes)
     private readonly cnaesRepository: Repository<Cnaes>,
-  ) {}
+  ) { }
 
-async create(createZoneamentoDto: CreateZoneamentoDto): Promise<Zoneamento> {
-  const { nome, descricao, cnaesPermitidosIds } = createZoneamentoDto;
+  async create(createZoneamentoDto: CreateZoneamentoDto): Promise<Zoneamento> {
+    const { nome, descricao, cnaesPermitidosIds } = createZoneamentoDto;
 
-  if (!Array.isArray(cnaesPermitidosIds) || cnaesPermitidosIds.length === 0) {
-    throw new BadRequestException('A lista de CNAEs permitidos deve ser um array não vazio');
+    if (!Array.isArray(cnaesPermitidosIds) || cnaesPermitidosIds.length === 0) {
+      throw new BadRequestException('A lista de CNAEs permitidos deve ser um array não vazio');
+    }
+
+    // Verifica nome duplicado
+    const nomeExistente = await this.zoneamentoRepository.findOne({ where: { nome } });
+    if (nomeExistente) {
+      throw new BadRequestException(`Já existe um Zoneamento com o nome "${nome}"`);
+    }
+
+    // Buscar CNAEs existentes
+    const cnaesEncontrados = await this.cnaesRepository.find({
+      where: { id: In(cnaesPermitidosIds) },
+    });
+
+    if (cnaesEncontrados.length !== cnaesPermitidosIds.length) {
+      throw new BadRequestException('Alguns CNAEs informados não existem');
+    }
+
+    const zoneamento = this.zoneamentoRepository.create({
+      nome,
+      descricao,
+      cnaesPermitidos: cnaesEncontrados,
+    });
+
+    return await this.zoneamentoRepository.save(zoneamento);
   }
-
-  // Verifica nome duplicado
-  const nomeExistente = await this.zoneamentoRepository.findOne({ where: { nome } });
-  if (nomeExistente) {
-    throw new BadRequestException(`Já existe um Zoneamento com o nome "${nome}"`);
-  }
-
-  // Buscar CNAEs existentes
-  const cnaesEncontrados = await this.cnaesRepository.find({
-    where: { id: In(cnaesPermitidosIds) },
-  });
-
-  if (cnaesEncontrados.length !== cnaesPermitidosIds.length) {
-    throw new BadRequestException('Alguns CNAEs informados não existem');
-  }
-
-  const zoneamento = this.zoneamentoRepository.create({
-    nome,
-    descricao,
-    cnaesPermitidos: cnaesEncontrados,
-  });
-
-  return await this.zoneamentoRepository.save(zoneamento);
-}
-
 
   async updateById(
     id: number,
@@ -118,37 +118,38 @@ async create(createZoneamentoDto: CreateZoneamentoDto): Promise<Zoneamento> {
       throw new NotFoundException(`Zoneamento com ID ${id} não encontrado`);
     }
   }
-
-
-async atualizarCoordenadas(id: number, geometry: any): Promise<void> {
+async addPolygonById(id: number, geojson: any): Promise<Zoneamento> {
   const zoneamento = await this.zoneamentoRepository.findOne({ where: { id } });
+
   if (!zoneamento) {
     throw new NotFoundException(`Zoneamento com ID ${id} não encontrado`);
   }
 
-  if (!geometry || !geometry.type || !geometry.coordinates) {
-    throw new BadRequestException('Formato de coordenadas inválido. Esperado objeto GeoJSON geometry.');
+  try {
+    // Assume que vem um FeatureCollection
+    const feature = geojson.features[0];
+    if (!feature || feature.geometry.type !== 'Polygon') {
+      throw new BadRequestException('GeoJSON deve conter pelo menos um polígono');
+    }
+
+    // Remove altitude (terceiro valor) das coordenadas
+    const cleanedCoords = feature.geometry.coordinates.map((ring: any[]) =>
+      ring.map(coord => [coord[0], coord[1]])
+    );
+
+    const cleanedGeoJSON: any = {
+      type: 'Polygon',
+      coordinates: cleanedCoords,
+    };
+
+    // Convertendo para unknown para satisfazer o TypeScript
+    const wkt = parse(cleanedGeoJSON as unknown as string);
+
+    zoneamento.area = wkt;
+    return await this.zoneamentoRepository.save(zoneamento);
+  } catch (error) {
+    throw new BadRequestException('GeoJSON inválido ou não pôde ser convertido para WKT');
   }
-
-  const geo2D = this.removeZCoordinates(geometry);
-
-  await this.zoneamentoRepository
-    .createQueryBuilder()
-    .update(Zoneamento)
-    .set({
-      area: () => `ST_GeomFromGeoJSON('${JSON.stringify(geo2D)}')`
-    })
-    .where("id = :id", { id })
-    .execute();
 }
-
-
-private removeZCoordinates(geometry: any) {
-  const coords = geometry.coordinates.map((ring: any) =>
-    ring.map((coord: number[]) => [coord[0], coord[1]])
-  );
-  return { ...geometry, coordinates: coords };
-}
-
 
 }
