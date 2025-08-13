@@ -118,4 +118,37 @@ async create(createZoneamentoDto: CreateZoneamentoDto): Promise<Zoneamento> {
       throw new NotFoundException(`Zoneamento com ID ${id} não encontrado`);
     }
   }
+
+
+async atualizarCoordenadas(id: number, geometry: any): Promise<void> {
+  const zoneamento = await this.zoneamentoRepository.findOne({ where: { id } });
+  if (!zoneamento) {
+    throw new NotFoundException(`Zoneamento com ID ${id} não encontrado`);
+  }
+
+  if (!geometry || !geometry.type || !geometry.coordinates) {
+    throw new BadRequestException('Formato de coordenadas inválido. Esperado objeto GeoJSON geometry.');
+  }
+
+  const geo2D = this.removeZCoordinates(geometry);
+
+  await this.zoneamentoRepository
+    .createQueryBuilder()
+    .update(Zoneamento)
+    .set({
+      area: () => `ST_GeomFromGeoJSON('${JSON.stringify(geo2D)}')`
+    })
+    .where("id = :id", { id })
+    .execute();
+}
+
+
+private removeZCoordinates(geometry: any) {
+  const coords = geometry.coordinates.map((ring: any) =>
+    ring.map((coord: number[]) => [coord[0], coord[1]])
+  );
+  return { ...geometry, coordinates: coords };
+}
+
+
 }

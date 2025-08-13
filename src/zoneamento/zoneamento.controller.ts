@@ -11,6 +11,7 @@ import {
 import { ZoneamentoService } from './zoneamento.service';
 import { CreateZoneamentoDto } from './dtos/create-zoneamento.dto';
 import { UpdateZoneamentoDto } from './dtos/update-zoneamento.dto';
+import { AtualizarCoordenadasDto } from './dtos/cordenadas.dto';
 
 @Controller('v1/integracao/zoneamentos')
 export class ZoneamentoController {
@@ -42,5 +43,13 @@ export class ZoneamentoController {
   @Delete(':id')
   async deleteById(@Param('id', ParseIntPipe) id: number) {
     return await this.zoneamentoService.deleteById(id);
+  }
+
+  @Patch(':id/coordenadas')
+  async atualizarCoordenadas(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: AtualizarCoordenadasDto,
+  ) {
+    return await this.zoneamentoService.atualizarCoordenadas(id, body.geometry);
   }
 }
