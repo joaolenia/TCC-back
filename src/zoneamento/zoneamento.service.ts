@@ -14,7 +14,7 @@ export class ZoneamentoService {
 
     @InjectRepository(Cnaes)
     private readonly cnaesRepository: Repository<Cnaes>,
-  ) {}
+  ) { }
 
   async create(dto: CreateZoneamentoDto): Promise<Zoneamento> {
     const { nome, descricao, cnaesPermitidosIds, area } = dto;
@@ -23,14 +23,30 @@ export class ZoneamentoService {
       throw new BadRequestException('A lista de CNAEs permitidos deve ser um array não vazio');
     }
 
-    const nomeExistente = await this.zoneamentoRepository.findOne({ where: { nome } });
-    if (nomeExistente) throw new BadRequestException(`Já existe um Zoneamento com o nome "${nome}"`);
+    // Busca por zoneamento com mesmo nome e descrição
+    const mesmoNomeDescricao = await this.zoneamentoRepository.findOne({
+      where: { nome, descricao },
+    });
 
-    const cnaesEncontrados = await this.cnaesRepository.find({ where: { id: In(cnaesPermitidosIds) } });
-    if (cnaesEncontrados.length !== cnaesPermitidosIds.length)
+    if (mesmoNomeDescricao) {
+      throw new BadRequestException(
+        `Já existe um Zoneamento com o nome "${nome}" e a descrição "${descricao}"`
+      );
+    }
+
+    const cnaesEncontrados = await this.cnaesRepository.find({
+      where: { id: In(cnaesPermitidosIds) },
+    });
+
+    if (cnaesEncontrados.length !== cnaesPermitidosIds.length) {
       throw new BadRequestException('Alguns CNAEs informados não existem');
+    }
 
-    const zoneamento = this.zoneamentoRepository.create({ nome, descricao, cnaesPermitidos: cnaesEncontrados });
+    const zoneamento = this.zoneamentoRepository.create({
+      nome,
+      descricao,
+      cnaesPermitidos: cnaesEncontrados,
+    });
 
     if (area) {
       zoneamento.area = this.validateGeoJSON(area);
@@ -38,6 +54,7 @@ export class ZoneamentoService {
 
     return await this.zoneamentoRepository.save(zoneamento);
   }
+
 
   async updateById(id: number, dto: UpdateZoneamentoDto): Promise<Zoneamento> {
     const zoneamento = await this.zoneamentoRepository.findOne({ where: { id } });
@@ -80,36 +97,36 @@ export class ZoneamentoService {
     if (result.affected === 0) throw new NotFoundException(`Zoneamento com ID ${id} não encontrado`);
   }
 
-private validateGeoJSON(area: any): object {
-  if (!area.features || area.features.length === 0) {
-    throw new BadRequestException('GeoJSON deve conter ao menos um polígono');
+  private validateGeoJSON(area: any): object {
+    if (!area.features || area.features.length === 0) {
+      throw new BadRequestException('GeoJSON deve conter ao menos um polígono');
+    }
+
+    const feature = area.features[0];
+    if (!feature.geometry || feature.geometry.type !== 'Polygon') {
+      throw new BadRequestException('GeoJSON deve conter um polígono válido');
+    }
+
+    // Limpa a terceira coordenada se existir
+    const cleanedCoordinates = feature.geometry.coordinates.map((ring: number[][]) =>
+      ring.map(coord => [coord[0], coord[1]])
+    );
+
+    return {
+      type: 'Polygon',
+      coordinates: cleanedCoordinates,
+    };
   }
-
-  const feature = area.features[0];
-  if (!feature.geometry || feature.geometry.type !== 'Polygon') {
-    throw new BadRequestException('GeoJSON deve conter um polígono válido');
-  }
-
-  // Limpa a terceira coordenada se existir
-  const cleanedCoordinates = feature.geometry.coordinates.map((ring: number[][]) =>
-    ring.map(coord => [coord[0], coord[1]])
-  );
-
-  return {
-    type: 'Polygon',
-    coordinates: cleanedCoordinates,
-  };
-}
 
   async findZoneByCoordinate(lon: number, lat: number): Promise<Zoneamento | null> {
-  return await this.zoneamentoRepository
-    .createQueryBuilder('z')
-     .leftJoinAndSelect('z.cnaesPermitidos', 'c')
-    .where(
-      'ST_Contains(z.area, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))',
-      { lon, lat }
-    )
-    .getOne();
-}
+    return await this.zoneamentoRepository
+      .createQueryBuilder('z')
+      .leftJoinAndSelect('z.cnaesPermitidos', 'c')
+      .where(
+        'ST_Contains(z.area, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))',
+        { lon, lat }
+      )
+      .getOne();
+  }
 
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Param } from '@nestjs/common';
 import { ConsultaPreviaService } from './consulta-previa.service';
 import { CreateConsultaPreviaDto } from './dtos/create-consulta-previa.dto';
 import { ConsultaPrevia } from './entities/consulta-previa.entity';
@@ -18,4 +18,9 @@ export class ConsultaPreviaController {
   async getResumo() {
     return this.consultaPreviaService.findAllResumo();
   }
+
+  @Get(':id')
+async getById(@Param('id') id: number) {
+  return await this.consultaPreviaService.findById(id);
+}
 }

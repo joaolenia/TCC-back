@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { CreateConsultaPreviaDto } from './dtos/create-consulta-previa.dto';
 import { ConsultaPrevia, SituacaoConsulta } from './entities/consulta-previa.entity';
 import { Solicitante } from './entities/solicitante.entity';
@@ -26,37 +26,7 @@ export class ConsultaPreviaService {
     private readonly zoneamentoService: ZoneamentoService,
   ) {}
 
-  async create(
-    createConsultaPreviaDto: CreateConsultaPreviaDto,
-  ): Promise<ConsultaPreviaResponseDto> {
-    const { id: idSigFacil, ...dados } = createConsultaPreviaDto.dados_consulta_previa;
 
-    const saved = await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const novaConsulta = this.consultaPreviaRepository.create({
-        ...dados,
-        id_sigFacil: idSigFacil,
-        solicitante: dados.solicitante as Solicitante,
-        endereco: dados.endereco as Endereco,
-        utilizacao_solo: dados.utilizacao_solo as UtilizacaoSolo,
-        classificacao_risco: dados.classificacao_risco as ClassificacaoRisco,
-        opcoes_nome: dados.opcoes_nome as OpcaoNome[],
-        atividades: dados.atividades as Atividade[],
-        eventos: dados.eventos as EventoRedesim[],
-        socios: dados.socios as Socio[],
-        tipo_unidade: dados.tipo_unidade as TipoUnidade[],
-        formas_atuacao: dados.formas_atuacao as FormaAtuacao[],
-        questionario: dados.questionario as Pergunta[],
-      });
-
-      const savedConsulta = await transactionalEntityManager.save(novaConsulta);
-
-      await this.assignZoneamento(savedConsulta);
-
-      return savedConsulta;
-    });
-
-    return this.mapToResponse(saved);
-  }
 
    async findAllResumo(): Promise<any[]> {
     const consultas = await this.consultaPreviaRepository.find({
@@ -82,70 +52,124 @@ export class ConsultaPreviaService {
     });
   }
 
-  private async assignZoneamento(consulta: ConsultaPrevia) {
-    const lat = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_latitude);
-    const lon = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_longitude);
+  async findById(id: number): Promise<ConsultaPrevia | null> {
+  return await this.consultaPreviaRepository.findOne({
+    where: { id },
+    relations: [
+      'solicitante',
+      'endereco',
+      'endereco.coordenadas_geograficas',
+      'utilizacao_solo',
+      'classificacao_risco',
+      'opcoes_nome',
+      'atividades',
+      'atividades.atividades_especializadas',
+      'eventos',
+      'socios',
+      'tipo_unidade',
+      'formas_atuacao',
+      'questionario',
+      'zoneamento',
+      'zoneamento.cnaesPermitidos',
+    ],
+  });
+}
 
-    if (!isNaN(lat) && !isNaN(lon)) {
-      const zona = await this.zoneamentoService.findZoneByCoordinate(lon, lat);
 
-      if (!zona) {
-        consulta.situacao = SituacaoConsulta.INDEFERIDO;
-        consulta.observacoes = 'Coordenadas geográficas inválidas ou fora de qualquer zona.';
-        await this.consultaPreviaRepository.save(consulta);
-        return;
-      }
+async create(
+  createConsultaPreviaDto: CreateConsultaPreviaDto,
+): Promise<ConsultaPreviaResponseDto> {
+  const { id: idSigFacil, ...dados } = createConsultaPreviaDto.dados_consulta_previa;
 
-      consulta.zoneamento = zona;
-      await this.consultaPreviaRepository.save(consulta);
+  const saved = await this.dataSource.transaction(async (manager) => {
+    const novaConsulta = this.consultaPreviaRepository.create({
+      ...dados,
+      id_sigFacil: idSigFacil,
+      solicitante: dados.solicitante as Solicitante,
+      endereco: dados.endereco as Endereco,
+      utilizacao_solo: dados.utilizacao_solo as UtilizacaoSolo,
+      classificacao_risco: dados.classificacao_risco as ClassificacaoRisco,
+      opcoes_nome: dados.opcoes_nome as OpcaoNome[],
+      atividades: dados.atividades as Atividade[],
+      eventos: dados.eventos as EventoRedesim[],
+      socios: dados.socios as Socio[],
+      tipo_unidade: dados.tipo_unidade as TipoUnidade[],
+      formas_atuacao: dados.formas_atuacao as FormaAtuacao[],
+      questionario: dados.questionario as Pergunta[],
+    });
 
-      await this.validateAtividadesNaZona(consulta);
-    } else {
+    const savedConsulta = await manager.save(novaConsulta);
+
+    await this.assignZoneamento(savedConsulta, manager);
+
+    return savedConsulta;
+  });
+
+  return this.mapToResponse(saved);
+}
+
+private async assignZoneamento(consulta: ConsultaPrevia, manager: EntityManager) {
+  const lat = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_latitude);
+  const lon = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_longitude);
+
+  if (!isNaN(lat) && !isNaN(lon)) {
+    const zona = await this.zoneamentoService.findZoneByCoordinate(lon, lat);
+
+    if (!zona) {
       consulta.situacao = SituacaoConsulta.INDEFERIDO;
-      consulta.observacoes = 'Coordenadas geográficas ausentes ou inválidas.';
-      await this.consultaPreviaRepository.save(consulta);
-    }
-  }
-
-  private async validateAtividadesNaZona(consulta: ConsultaPrevia) {
-    if (!consulta.zoneamento) {
-      consulta.situacao = SituacaoConsulta.INDEFERIDO;
-      consulta.observacoes = 'Zona não atribuída para a consulta.';
-      await this.consultaPreviaRepository.save(consulta);
+      consulta.observacoes = 'Coordenadas geográficas inválidas ou fora de qualquer zona.';
+      await manager.save(consulta);
       return;
     }
 
-    const cnaesPermitidos = consulta.zoneamento.cnaesPermitidos.map((c) => c.codigo);
-    const cnaesInvalidos: string[] = [];
+    consulta.zoneamento = zona;
+    await manager.save(consulta);
 
-    for (const atividade of consulta.atividades || []) {
-      if (!atividade.is_exerce_no_endereco) continue;
+    await this.validateAtividadesNaZona(consulta, manager);
+  } else {
+    consulta.situacao = SituacaoConsulta.INDEFERIDO;
+    consulta.observacoes = 'Coordenadas geográficas ausentes ou inválidas.';
+    await manager.save(consulta);
+  }
+}
 
-      if (!cnaesPermitidos.includes(atividade.co_cnae)) {
-        cnaesInvalidos.push(atividade.co_cnae);
-      }
+private async validateAtividadesNaZona(consulta: ConsultaPrevia, manager: EntityManager) {
+  if (!consulta.zoneamento) {
+    consulta.situacao = SituacaoConsulta.INDEFERIDO;
+    consulta.observacoes = 'Zona não atribuída para a consulta.';
+    await manager.save(consulta);
+    return;
+  }
 
-      if (atividade.atividades_especializadas) {
-        for (const especial of atividade.atividades_especializadas) {
-          if (especial.is_exerce_no_endereco && !cnaesPermitidos.includes(especial.co_cnae_especializada)) {
-            cnaesInvalidos.push(especial.co_cnae_especializada);
-          }
+  const cnaesPermitidos = consulta.zoneamento.cnaesPermitidos.map((c) => c.codigo);
+  const cnaesInvalidos: string[] = [];
+
+  for (const atividade of consulta.atividades || []) {
+    if (!atividade.is_exerce_no_endereco) continue;
+
+    if (!cnaesPermitidos.includes(atividade.co_cnae)) {
+      cnaesInvalidos.push(atividade.co_cnae);
+    }
+
+    if (atividade.atividades_especializadas) {
+      for (const especial of atividade.atividades_especializadas) {
+        if (especial.is_exerce_no_endereco && !cnaesPermitidos.includes(especial.co_cnae_especializada)) {
+          cnaesInvalidos.push(especial.co_cnae_especializada);
         }
       }
     }
-
-    if (cnaesInvalidos.length > 0) {
-      consulta.situacao = SituacaoConsulta.INDEFERIDO;
-      consulta.observacoes = `As seguintes atividades não são permitidas nesta zona: ${cnaesInvalidos.join(
-        ', ',
-      )}`;
-    } else {
-      consulta.situacao = SituacaoConsulta.DEFERIDO;
-      consulta.observacoes = '';
-    }
-
-    await this.consultaPreviaRepository.save(consulta);
   }
+
+  if (cnaesInvalidos.length > 0) {
+    consulta.situacao = SituacaoConsulta.INDEFERIDO;
+    consulta.observacoes = `As seguintes atividades não são permitidas nesta zona: ${cnaesInvalidos.join(', ')}`;
+  } else {
+    consulta.situacao = SituacaoConsulta.DEFERIDO;
+    consulta.observacoes = '';
+  }
+
+  await manager.save(consulta);
+}
 
   private mapToResponse(consulta: ConsultaPrevia): ConsultaPreviaResponseDto {
     const response = new ConsultaPreviaResponseDto();
