@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { ConsultaPreviaModule } from './consulta-previa/consulta-previa.module';
 import { CnaesModule } from './cnaes/cnaes.module';
 import { ZoneamentoModule } from './zoneamento/zoneamento.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { ZoneamentoModule } from './zoneamento/zoneamento.module';
     ConsultaPreviaModule,
     CnaesModule,
     ZoneamentoModule,
+    UsuarioModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
