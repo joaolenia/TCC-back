@@ -16,7 +16,7 @@ import { ZoneamentoModule } from './zoneamento/zoneamento.module';
       password: '1234567',   
       database: 'consulta_previa_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // só usar em dev
+      synchronize: true,
     }),
     ConsultaPreviaModule,
     CnaesModule,
