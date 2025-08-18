@@ -7,7 +7,7 @@ export class Zoneamento {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: false })
   nome: string;
 
   @Column({ type: 'varchar', nullable: true })

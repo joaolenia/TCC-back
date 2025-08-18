@@ -28,6 +28,54 @@ export class ConsultaPreviaService {
 
 
 
+ async findAllResumo(): Promise<any[]> {
+    const consultas = await this.consultaPreviaRepository.find({
+      relations: ['solicitante', 'endereco', 'atividades'],
+    });
+
+    return consultas.map((c) => {
+      const enderecoResumido = c.endereco
+        ? `${c.endereco.ds_bairro}, ${c.endereco.ds_endereco}, ${c.endereco.nu_numero}`
+        : '';
+
+      const cnaes = c.atividades?.map((a) => a.co_cnae) || [];
+
+      return {
+        id: c.id,
+        situacao:c.situacao,
+        co_protocolo_redesim: c.co_protocolo_redesim,
+        nome_solicitante: c.solicitante?.ds_nome || '',
+        endereco: enderecoResumido,
+        dt_solicitacao: c.dt_solicitacao,
+        cnaes,
+      };
+    });
+  }
+
+  async findById(id: number): Promise<ConsultaPrevia | null> {
+  return await this.consultaPreviaRepository.findOne({
+    where: { id },
+    relations: [
+      'solicitante',
+      'endereco',
+      'endereco.coordenadas_geograficas',
+      'utilizacao_solo',
+      'classificacao_risco',
+      'opcoes_nome',
+      'atividades',
+      'atividades.atividades_especializadas',
+      'eventos',
+      'socios',
+      'tipo_unidade',
+      'formas_atuacao',
+      'questionario',
+      'zoneamento',
+      'zoneamento.cnaesPermitidos',
+    ],
+  });
+}
+
+
 async create(
   createConsultaPreviaDto: CreateConsultaPreviaDto,
 ): Promise<ConsultaPreviaResponseDto> {
@@ -59,30 +107,6 @@ async create(
 
   return this.mapToResponse(saved);
 }
-
- async findAllResumo(): Promise<any[]> {
-    const consultas = await this.consultaPreviaRepository.find({
-      relations: ['solicitante', 'endereco', 'atividades'],
-    });
-
-    return consultas.map((c) => {
-      const enderecoResumido = c.endereco
-        ? `${c.endereco.ds_bairro}, ${c.endereco.ds_endereco}, ${c.endereco.nu_numero}`
-        : '';
-
-      const cnaes = c.atividades?.map((a) => a.co_cnae) || [];
-
-      return {
-        id: c.id,
-        situacao:c.situacao,
-        co_protocolo_redesim: c.co_protocolo_redesim,
-        nome_solicitante: c.solicitante?.ds_nome || '',
-        endereco: enderecoResumido,
-        dt_solicitacao: c.dt_solicitacao,
-        cnaes,
-      };
-    });
-  }
 
 private async assignZoneamento(consulta: ConsultaPrevia, manager: EntityManager) {
   const lat = parseFloat(consulta.endereco?.coordenadas_geograficas?.nu_latitude);
