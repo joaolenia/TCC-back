@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param, Delete, UseGuards, Get } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { CreateUsuarioDto } from './dtos/usuario-create.dto';
 import { UpdateUsuarioDto } from './dtos/usuario.update.dto';
@@ -19,6 +19,20 @@ export class UsuarioController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
+  @Get()
+  getAll() {
+    return this.usuarioService.getAll();
+  }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Get(':id')
+  getOne(@Param('id') id: number) {
+    return this.usuarioService.getOne(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @Put(':id')
   update(@Param('id') id: number, @Body() dto: UpdateUsuarioDto) {
     return this.usuarioService.update(id, dto);
@@ -30,5 +44,7 @@ export class UsuarioController {
   remove(@Param('id') id: number) {
     return this.usuarioService.remove(id);
   }
+
+
 
 }

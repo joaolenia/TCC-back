@@ -85,5 +85,13 @@ export class UsuarioService {
     where: [{ email: login }, { cpf: login }],
   });
 }
+  async getAll() {
+  return this.usuarioRepo.find();
+}
+
+  async getOne(id:number) {
+  return this.usuarioRepo.findOne({where:{id:id}});
+}
+
 
 }
