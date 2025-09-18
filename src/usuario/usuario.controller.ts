@@ -10,8 +10,8 @@ import { Roles } from '../auth/roles.decorator';
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) { }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+ // @UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles('ADMIN')
   @Post()
   create(@Body() dto: CreateUsuarioDto) {
     return this.usuarioService.create(dto);
