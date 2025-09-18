@@ -36,18 +36,24 @@ export class UsuarioService {
     return this.usuarioRepo.save(usuario);
   }
 
-  async update(id: number, dto: UpdateUsuarioDto): Promise<Usuario> {
+async update(id: number, dto: UpdateUsuarioDto): Promise<Usuario> {
     const usuario = await this.usuarioRepo.findOne({ where: { id } });
     if (!usuario) throw new NotFoundException('Usuário não encontrado');
 
-    if (dto.email) {
-      const existe = await this.usuarioRepo.findOne({ where: { email: dto.email } });
-      if (existe && existe.id !== id) throw new BadRequestException('Email já usado');
+
+    if (dto.email && dto.email !== usuario.email) {
+      const existe = await this.usuarioRepo.findOne({ where: { email: dto.email } }); 
+
+      if (existe) { 
+          throw new BadRequestException('Email já usado por outro usuário.');
+      }
     }
 
-    if (dto.cpf) {
+    if (dto.cpf && dto.cpf !== usuario.cpf) {
       const existe = await this.usuarioRepo.findOne({ where: { cpf: dto.cpf } });
-      if (existe && existe.id !== id) throw new BadRequestException('CPF já usado');
+      if (existe) {
+          throw new BadRequestException('CPF já usado por outro usuário.');
+      }
     }
 
     if (dto.senha) {
@@ -56,7 +62,7 @@ export class UsuarioService {
 
     Object.assign(usuario, dto);
     return this.usuarioRepo.save(usuario);
-  }
+}
 
   async remove(id: number): Promise<void> {
     const usuario = await this.usuarioRepo.findOne({ where: { id } });
